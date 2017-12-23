@@ -18,14 +18,20 @@ public class MainScript : MonoBehaviour
 
     private GameObject sphereDisplay;
 
+    private GameObject sphereCameraPlaneDisplay;
+
     private Geometry.Frustum frustum;
+
+    private Vector3 cameraPosition;
 
     void Start()
     {
         pointDisplay = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         sphereDisplay = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        sphereCameraPlaneDisplay = GameObject.CreatePrimitive(PrimitiveType.Plane);
 
         Plane[] planes = GeometryUtility.CalculateFrustumPlanes(Camera.main);
+        cameraPosition = Camera.main.transform.position;
 
         for (int i = 0; i < planes.Length; i++)
         {
@@ -55,6 +61,9 @@ public class MainScript : MonoBehaviour
                 pointDisplay.GetComponent<Renderer>().material = outsideMaterial;
             }
         }
+
+        sphereCameraPlaneDisplay.transform.position = spherePosition;
+        sphereCameraPlaneDisplay.transform.rotation = Quaternion.FromToRotation(Vector3.up, cameraPosition - spherePosition);
 
         {
             sphereDisplay.transform.position = spherePosition;
@@ -91,6 +100,13 @@ public class MainScript : MonoBehaviour
                 if (frustum[i].PlaneEquation(position) < 0.0f) {
                     color = Color.red;
                 }
+            }
+
+            Vector3 cameraPlaneNormal = (cameraPosition - spherePosition).normalized;
+            // if (new Geometry.Plane(cameraPlaneNormal, -Vector3.Dot(cameraPlaneNormal, spherePosition)).PlaneEquation(position) < 0.0f)
+            if (Vector3.Dot(cameraPlaneNormal, position) - Vector3.Dot(cameraPlaneNormal, spherePosition) < 0.0f)
+            {
+                color = Color.red;
             }
 
             Gizmos.color = color;
