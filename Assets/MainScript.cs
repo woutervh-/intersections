@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class MainScript : MonoBehaviour
 {
@@ -14,6 +15,8 @@ public class MainScript : MonoBehaviour
 
     public Vector3 spherePosition;
 
+    public Text debugText;
+
     private GameObject pointDisplay;
 
     private GameObject sphereDisplay;
@@ -23,6 +26,8 @@ public class MainScript : MonoBehaviour
     private Geometry.Frustum frustum;
 
     private Vector3 cameraPosition;
+
+    private Vector3[] samples;
 
     void Start()
     {
@@ -42,8 +47,20 @@ public class MainScript : MonoBehaviour
             gameObject.transform.rotation = Quaternion.FromToRotation(Vector3.up, plane.normal);
             frustum[i] = new Geometry.Plane(plane.normal, plane.distance);
         }
-
-        Debug.Log(frustum);
+        
+        samples = new Vector3[100 * 100];
+        for (int i = 0; i < 100; i++)
+        {
+            for (int j = 0; j < 100; j++)
+            {
+                float theta = 2.0f * Mathf.PI * i / 100.0f;
+                float phi = Mathf.Acos(2.0f * j / 100.0f - 1.0f);
+                float x = Mathf.Cos(theta) * Mathf.Sin(phi);
+                float y = Mathf.Sin(theta) * Mathf.Sin(phi);
+                float z = Mathf.Cos(phi);
+                samples[i * 100 + j] = new Vector3(x, y, z);
+            }
+        }
     }
 
     void Update()
@@ -78,6 +95,28 @@ public class MainScript : MonoBehaviour
                 sphereDisplay.GetComponent<Renderer>().material = outsideMaterial;
             }
         }
+
+        int countInside = 0;
+        for (int i = 0; i < samples.Length; i++)
+        {
+            Vector3 position = samples[i] * sphereRadius + spherePosition;
+            bool inside = true;
+            if (!Geometry.Intersections.Intersects(frustum, position).HasValue)
+            {
+                inside = false;
+            }
+            Vector3 cameraPlaneNormal = (cameraPosition - spherePosition).normalized;
+            Geometry.Plane plane = new Geometry.Plane(cameraPlaneNormal, -Vector3.Dot(cameraPlaneNormal, spherePosition));
+            if (plane.PlaneEquation(position) < 0.0f)
+            {
+                inside = false;
+            }
+            if (inside)
+            {
+                countInside += 1;
+            }
+        }
+        debugText.text = "Area visible: " + ((float)countInside / samples.Length * 100f) + "%";
     }
 
     void OnDrawGizmos()
@@ -97,7 +136,8 @@ public class MainScript : MonoBehaviour
 
             for (int i = 0; i < 6; i++)
             {
-                if (frustum[i].PlaneEquation(position) < 0.0f) {
+                if (frustum[i].PlaneEquation(position) < 0.0f)
+                {
                     color = Color.red;
                 }
             }
@@ -111,6 +151,18 @@ public class MainScript : MonoBehaviour
 
             Gizmos.color = color;
             Gizmos.DrawSphere(position, 0.05f);
+        }
+
+        {
+            // Vector3 cameraPlaneNormal = (cameraPosition - spherePosition).normalized;
+            // Geometry.Plane plane = new Geometry.Plane(cameraPlaneNormal, -Vector3.Dot(cameraPlaneNormal, spherePosition));
+            Geometry.Plane plane = frustum.bottom;
+            Vector3 closestPointOnPlane = spherePosition - plane.PlaneEquation(spherePosition) * plane.normal;
+            Vector3 perpendicularPlaneNormal = new Vector3(1f, 1f, -(plane.normal.x + plane.normal.y) / plane.normal.z).normalized;
+            float offset = Mathf.Sqrt(Mathf.Pow(sphereRadius, 2) - Mathf.Pow(plane.PlaneEquation(spherePosition), 2));
+            Gizmos.color = Color.magenta;
+            Gizmos.DrawSphere(closestPointOnPlane, 0.1f);
+            Gizmos.DrawSphere(closestPointOnPlane + perpendicularPlaneNormal * offset, 0.1f);
         }
     }
 }
