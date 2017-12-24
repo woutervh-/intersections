@@ -13,6 +13,11 @@ namespace Geometry
             this.radius = radius;
         }
 
+        public Vector3[] GenerateVertices()
+        {
+
+        }
+
         public override string ToString()
         {
             return "position: " + position + " radius: " + radius;

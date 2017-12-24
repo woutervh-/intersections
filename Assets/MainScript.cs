@@ -48,17 +48,17 @@ public class MainScript : MonoBehaviour
             frustum[i] = new Geometry.Plane(plane.normal, plane.distance);
         }
         
-        samples = new Vector3[100 * 100];
+        samples = new Vector3[100 * 50];
         for (int i = 0; i < 100; i++)
         {
-            for (int j = 0; j < 100; j++)
+            for (int j = 0; j < 50; j++)
             {
                 float theta = 2.0f * Mathf.PI * i / 100.0f;
-                float phi = Mathf.Acos(2.0f * j / 100.0f - 1.0f);
+                float phi = Mathf.Acos(2.0f * j / 50.0f - 1.0f);
                 float x = Mathf.Cos(theta) * Mathf.Sin(phi);
                 float y = Mathf.Sin(theta) * Mathf.Sin(phi);
                 float z = Mathf.Cos(phi);
-                samples[i * 100 + j] = new Vector3(x, y, z);
+                samples[i * 50 + j] = new Vector3(x, y, z);
             }
         }
     }
