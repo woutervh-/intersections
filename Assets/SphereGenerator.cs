@@ -3,22 +3,22 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
-public class FibonacciSphere : MonoBehaviour
+public class SphereGenerator : MonoBehaviour
 {
     [Range(1, 1000)]
-    public int numberOfVertices;
+    public int numberOfVertices = 200;
 
     [Range(-90f, 90f)]
-    public float minLatitude;
+    public float minLatitude = -90f;
 
     [Range(-180f, 180f)]
-    public float minLongitude;
+    public float minLongitude = -180f;
 
     [Range(-90f, 90f)]
-    public float maxLatitude;
+    public float maxLatitude = 90f;
 
     [Range(-180f, 180f)]
-    public float maxLongitude;
+    public float maxLongitude = 180f;
 
     private Vector3[] vertices;
 

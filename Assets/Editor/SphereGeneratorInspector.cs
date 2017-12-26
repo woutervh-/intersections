@@ -1,7 +1,7 @@
 ﻿using UnityEditor;
 using UnityEngine;
 
-[CustomEditor(typeof(FibonacciSphere))]
+[CustomEditor(typeof(SphereGenerator))]
 public class TextureCreatorInspector : Editor
 {
     public override void OnInspectorGUI()
@@ -10,7 +10,7 @@ public class TextureCreatorInspector : Editor
         DrawDefaultInspector();
         if (EditorGUI.EndChangeCheck() && Application.isPlaying)
         {
-            (target as FibonacciSphere).GenerateVertices();
+            (target as SphereGenerator).GenerateVertices();
         }
     }
 }
