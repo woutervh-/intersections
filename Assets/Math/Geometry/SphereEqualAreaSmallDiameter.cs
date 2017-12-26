@@ -7,8 +7,18 @@ namespace Math.Geometry
     {
         private static float AreaOfSphere(int dim)
         {
-            float power = (dim + 1) / 2f;
-            return (2f * Mathf.Pow(Mathf.PI, power) / Numerics.SpecialFunctions.Gamma(power)).Real;
+            float volume = 1f;
+            float area = 2f;
+
+            for (int i = 1; i <= dim; i++)
+            {
+                float nextVolume = area / i;
+                float nextArea = 2f * Mathf.PI * volume;
+                volume = nextVolume;
+                area = nextArea;
+            }
+
+            return area;
         }
 
         private static float AreaOfIdealRegion(int dim, int n)
