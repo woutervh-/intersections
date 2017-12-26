@@ -34,7 +34,7 @@ public class SphereGenerator : MonoBehaviour
 
     public void GenerateVertices()
     {
-        Math.Tuple<float[], int[]> regions = Math.Geometry.SphereEqualAreaSmallDiameter.GenerateCaps(2, numberOfVertices);
+        Math.Tuple<float[], int[]> regions = Math.Geometry.SphereEqualAreaSmallDiameter.GenerateCaps(2, numberOfVertices, Mathf.PI / 2f - Mathf.Deg2Rad * maxLatitude);
         float[] colatitudes = regions.Item1;
         int[] regionList = regions.Item2;
         int collarCount = colatitudes.Length;
@@ -56,13 +56,13 @@ public class SphereGenerator : MonoBehaviour
 
     private void PutCollarVertices(int regions, int index, Vector3[] vertices, float topColatitude, float bottomColatitude)
     {
-        float theta = (topColatitude + bottomColatitude) / 2f;
-        float y = Mathf.Cos(theta);
+        float theta = Mathf.PI / 2f - (topColatitude + bottomColatitude) / 2f;
+        float y = Mathf.Sin(theta);
         for (int i = 0; i < regions; i++)
         {
             float phi = (float)i / regions * 2f * Mathf.PI;
-            float x = Mathf.Sin(theta) * Mathf.Sin(phi);
-            float z = Mathf.Sin(theta) * Mathf.Cos(phi);
+            float x = Mathf.Cos(theta) * Mathf.Sin(phi);
+            float z = Mathf.Cos(theta) * Mathf.Cos(phi);
             vertices[i + index] = new Vector3(x, y, z);
         }
     }

@@ -73,23 +73,23 @@ namespace Math.Geometry
             }
         }
 
-        private static float AreaOfCap(int dim, float capRadius)
+        private static float AreaOfCap(int dim, float colatitude)
         {
             if (dim == 1)
             {
-                return 2f * capRadius;
+                return 2f * colatitude;
             }
             else if (dim == 2)
             {
-                return 4f * Mathf.PI * Mathf.Pow(Mathf.Sin(capRadius / 2f), 2f);
+                return 4f * Mathf.PI * Mathf.Pow(Mathf.Sin(colatitude / 2f), 2f);
             }
 
             throw new ArgumentOutOfRangeException("dim", "must be 1 <= dim <= 2");
         }
 
-        private static float AreaOfCollar(int dim, float topRadius, float bottomRadius)
+        private static float AreaOfCollar(int dim, float topColatitude, float bottomColatitude)
         {
-            return AreaOfCap(dim, bottomRadius) - AreaOfCap(dim, topRadius);
+            return AreaOfCap(dim, bottomColatitude) - AreaOfCap(dim, topColatitude);
         }
 
         private static int[] RoundIdealRegionList(int n, float[] idealRegionList)
@@ -140,7 +140,7 @@ namespace Math.Geometry
             return colatitudes;
         }
 
-        public static Tuple<float[], int[]> GenerateCaps(int dim, int n)
+        public static Tuple<float[], int[]> GenerateCaps(int dim, int n, float minPolarColatitude)
         {
             if (dim == 1)
             {
