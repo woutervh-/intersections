@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class FibonacciSphere : MonoBehaviour
@@ -21,22 +22,52 @@ public class FibonacciSphere : MonoBehaviour
 
     private Vector3[] vertices;
 
-    void Start()
+    private void Start()
     {
         GenerateVertices();
     }
 
-    void Update()
+    private void Update()
     {
         //
     }
 
     public void GenerateVertices()
     {
-        vertices = new Vector3[0]; // Geometry.Sphere.GenerateVertices(numberOfVertices, minLatitude, minLongitude, maxLatitude, maxLongitude);
+        Math.Tuple<float[], int[]> regions = Math.Geometry.SphereEqualAreaSmallDiameter.GenerateCaps(2, numberOfVertices);
+        float[] colatitudes = regions.Item1;
+        int[] regionList = regions.Item2;
+        int collarCount = colatitudes.Length;
+
+        int sumRegions = regionList.Sum();
+        Vector3[] vertices = new Vector3[sumRegions];
+
+        int index = 0;
+        for (int i = 0; i < collarCount; i++)
+        {
+            float topColatitude = i == 0 ? 0f : colatitudes[i - 1];
+            float bottomColatitude = colatitudes[i];
+            PutCollarVertices(regionList[i], index, vertices, topColatitude, bottomColatitude);
+            index += regionList[i];
+        }
+        
+        this.vertices = vertices;
     }
 
-    void OnDrawGizmos()
+    private void PutCollarVertices(int regions, int index, Vector3[] vertices, float topColatitude, float bottomColatitude)
+    {
+        float theta = (topColatitude + bottomColatitude) / 2f;
+        float y = Mathf.Cos(theta);
+        for (int i = 0; i < regions; i++)
+        {
+            float phi = (float)i / regions * 2f * Mathf.PI;
+            float x = Mathf.Sin(theta) * Mathf.Sin(phi);
+            float z = Mathf.Sin(theta) * Mathf.Cos(phi);
+            vertices[i + index] = new Vector3(x, y, z);
+        }
+    }
+
+    private void OnDrawGizmos()
     {
         for (int i = 0; i < vertices.Length; i++)
         {
