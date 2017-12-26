@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-namespace Geometry
+namespace Math.Geometry
 {
     public struct Plane
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace Geometry
+namespace Math.Geometry
 {
     public static class Intersections
     {

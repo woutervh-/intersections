@@ -1,4 +1,4 @@
-﻿namespace Geometry
+﻿namespace Math.Geometry
 {
     public struct Frustum
     {

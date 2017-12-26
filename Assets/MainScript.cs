@@ -16,14 +16,14 @@ public class MainScript : MonoBehaviour
     public Vector3 spherePosition;
 
     public Text debugText;
-
+    
     private GameObject pointDisplay;
 
     private GameObject sphereDisplay;
 
     private GameObject sphereCameraPlaneDisplay;
 
-    private Geometry.Frustum frustum;
+    private Math.Geometry.Frustum frustum;
 
     private Vector3 cameraPosition;
 
@@ -45,7 +45,7 @@ public class MainScript : MonoBehaviour
             gameObject.name = "Plane " + i;
             gameObject.transform.position = -plane.normal * plane.distance;
             gameObject.transform.rotation = Quaternion.FromToRotation(Vector3.up, plane.normal);
-            frustum[i] = new Geometry.Plane(plane.normal, plane.distance);
+            frustum[i] = new Math.Geometry.Plane(plane.normal, plane.distance);
         }
         
         samples = new Vector3[100 * 50];
@@ -68,7 +68,7 @@ public class MainScript : MonoBehaviour
         {
             pointDisplay.transform.position = pointPosition;
             pointDisplay.transform.localScale = 0.1f * Vector3.one;
-            Vector3? intersection = Geometry.Intersections.Intersects(frustum, pointPosition);
+            Vector3? intersection = Math.Geometry.Intersections.Intersects(frustum, pointPosition);
             if (intersection.HasValue)
             {
                 pointDisplay.GetComponent<Renderer>().material = insideMaterial;
@@ -85,7 +85,7 @@ public class MainScript : MonoBehaviour
         {
             sphereDisplay.transform.position = spherePosition;
             sphereDisplay.transform.localScale = 2f * sphereRadius * Vector3.one;
-            bool intersects = Geometry.Intersections.Intersects(frustum, new Geometry.Sphere(spherePosition, sphereRadius)).All((intersection) => intersection != null);
+            bool intersects = Math.Geometry.Intersections.Intersects(frustum, new Math.Geometry.Sphere(spherePosition, sphereRadius)).All((intersection) => intersection != null);
             if (intersects)
             {
                 sphereDisplay.GetComponent<Renderer>().material = insideMaterial;
@@ -101,12 +101,12 @@ public class MainScript : MonoBehaviour
         {
             Vector3 position = samples[i] * sphereRadius + spherePosition;
             bool inside = true;
-            if (!Geometry.Intersections.Intersects(frustum, position).HasValue)
+            if (!Math.Geometry.Intersections.Intersects(frustum, position).HasValue)
             {
                 inside = false;
             }
             Vector3 cameraPlaneNormal = (cameraPosition - spherePosition).normalized;
-            Geometry.Plane plane = new Geometry.Plane(cameraPlaneNormal, -Vector3.Dot(cameraPlaneNormal, spherePosition));
+            Math.Geometry.Plane plane = new Math.Geometry.Plane(cameraPlaneNormal, -Vector3.Dot(cameraPlaneNormal, spherePosition));
             if (plane.PlaneEquation(position) < 0.0f)
             {
                 inside = false;
@@ -121,8 +121,8 @@ public class MainScript : MonoBehaviour
 
     void OnDrawGizmos()
     {
-        Geometry.Intersections.FrustumSphereIntersection?[] intersections = Geometry.Intersections.Intersects(frustum, new Geometry.Sphere(spherePosition, sphereRadius));
-        foreach (Geometry.Intersections.FrustumSphereIntersection intersection in intersections.Where((intersection) => intersection.HasValue).Select((intersection) => intersection.Value))
+        Math.Geometry.Intersections.FrustumSphereIntersection?[] intersections = Math.Geometry.Intersections.Intersects(frustum, new Math.Geometry.Sphere(spherePosition, sphereRadius));
+        foreach (Math.Geometry.Intersections.FrustumSphereIntersection intersection in intersections.Where((intersection) => intersection.HasValue).Select((intersection) => intersection.Value))
         {
             Gizmos.color = Color.blue;
             Gizmos.DrawLine(spherePosition + intersection.normal * sphereRadius, spherePosition - intersection.normal * intersection.distance);
@@ -156,7 +156,7 @@ public class MainScript : MonoBehaviour
         {
             // Vector3 cameraPlaneNormal = (cameraPosition - spherePosition).normalized;
             // Geometry.Plane plane = new Geometry.Plane(cameraPlaneNormal, -Vector3.Dot(cameraPlaneNormal, spherePosition));
-            Geometry.Plane plane = frustum.bottom;
+            Math.Geometry.Plane plane = frustum.bottom;
             Vector3 closestPointOnPlane = spherePosition - plane.PlaneEquation(spherePosition) * plane.normal;
             Vector3 perpendicularPlaneNormal = new Vector3(1f, 1f, -(plane.normal.x + plane.normal.y) / plane.normal.z).normalized;
             float offset = Mathf.Sqrt(Mathf.Pow(sphereRadius, 2) - Mathf.Pow(plane.PlaneEquation(spherePosition), 2));
