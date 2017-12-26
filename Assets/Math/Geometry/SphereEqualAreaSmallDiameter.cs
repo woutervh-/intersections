@@ -5,9 +5,9 @@ namespace Math.Geometry
 {
     public static class SphereEqualAreaSmallDiameter
     {
-        private static float AreaOfIdealRegion(int dim, int n)
+        private static float AreaOfIdealRegion(int dim, int n, float minColatitude, float maxColatitude)
         {
-            return AreaOfCollar(dim, 0f, Mathf.PI) / n;
+            return AreaOfCollar(dim, minColatitude, maxColatitude) / n;
         }
 
         private static float PolarColatitude(int dim, int n)
@@ -22,11 +22,11 @@ namespace Math.Geometry
             }
             else
             {
-                return SphericalRadiusOfCap(dim, AreaOfIdealRegion(dim, n));
+                return ColatitudeOfCap(dim, AreaOfIdealRegion(dim, n));
             }
         }
 
-        private static float SphericalRadiusOfCap(int dim, float area)
+        private static float ColatitudeOfCap(int dim, float area)
         {
             if (dim == 1)
             {
@@ -117,7 +117,7 @@ namespace Math.Geometry
             for (int i = 0; i < numberCollars; i++)
             {
                 subtotal += regionList[i + 1];
-                colatitudes[i + 1] = SphericalRadiusOfCap(dim, subtotal * idealRegionArea);
+                colatitudes[i + 1] = ColatitudeOfCap(dim, subtotal * idealRegionArea);
             }
             colatitudes[numberCollars + 1] = Mathf.PI;
 
