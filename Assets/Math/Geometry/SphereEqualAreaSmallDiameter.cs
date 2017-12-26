@@ -5,25 +5,9 @@ namespace Math.Geometry
 {
     public static class SphereEqualAreaSmallDiameter
     {
-        private static float AreaOfSphere(int dim)
-        {
-            float volume = 1f;
-            float area = 2f;
-
-            for (int i = 1; i <= dim; i++)
-            {
-                float nextVolume = area / i;
-                float nextArea = 2f * Mathf.PI * volume;
-                volume = nextVolume;
-                area = nextArea;
-            }
-
-            return area;
-        }
-
         private static float AreaOfIdealRegion(int dim, int n)
         {
-            return AreaOfSphere(dim) / n;
+            return AreaOfCollar(dim, 0f, Mathf.PI) / n;
         }
 
         private static float PolarColatitude(int dim, int n)
@@ -162,7 +146,8 @@ namespace Math.Geometry
             else
             {
                 float polarColatitude = PolarColatitude(dim, n);
-                int numberOfCollars = NumberCollars(n, polarColatitude, IdealCollarAngle(dim, n));
+                float idealCollarAngle = IdealCollarAngle(dim, n);
+                int numberOfCollars = NumberCollars(n, polarColatitude, idealCollarAngle);
                 float[] idealRegionList = IdealRegionList(dim, n, polarColatitude, numberOfCollars);
                 int[] regionList = RoundIdealRegionList(n, idealRegionList);
                 float[] colatitudes = CapColatitudes(dim, n, polarColatitude, regionList);
