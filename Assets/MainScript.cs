@@ -162,7 +162,8 @@ public class MainScript : MonoBehaviour
 
         {
             Vector3 cameraPosition = Camera.main.transform.position;
-            Vector3 cameraPlaneNormal = (cameraPosition - spherePosition).normalized;
+            // Vector3 cameraPlaneNormal = (cameraPosition - spherePosition).normalized;
+            Vector3 cameraPlaneNormal = GeometryUtility.CalculateFrustumPlanes(Camera.main)[5].normal.normalized;
             Math.Geometry.Plane plane = new Math.Geometry.Plane(cameraPlaneNormal, -Vector3.Dot(cameraPlaneNormal, spherePosition));
 
             Gizmos.color = Color.blue;
@@ -175,7 +176,7 @@ public class MainScript : MonoBehaviour
             float phi = Mathf.Atan2(plane.normal.y, plane.normal.x);
             // Debug.Log(theta + " " + phi);
             // Vector3 planePerpendicular1 = new Vector3(Mathf.Sin(theta) * Mathf.Cos(phi), Mathf.Sin(theta) * Mathf.Sin(phi), Mathf.Cos(theta));
-            Vector3 planePerpendicular1 = Camera.main.transform.up.normalized;
+            Vector3 planePerpendicular1 = Vector3.Cross(Camera.main.transform.up.normalized, -plane.normal);
             Vector3 planePerpendicular2 = Vector3.Cross(planePerpendicular1, plane.normal);
             float offset = Mathf.Sqrt(Mathf.Pow(sphereRadius, 2) - Mathf.Pow(plane.PlaneEquation(spherePosition), 2));
             Gizmos.color = Color.magenta;
@@ -186,10 +187,10 @@ public class MainScript : MonoBehaviour
             float halfWidthAtSphere = halfHeightAtSphere * Camera.main.aspect;
             Mesh mesh = new Mesh();
             mesh.vertices = new Vector3[] {
-                spherePosition * plane.distance + planePerpendicular1 * halfHeightAtSphere + planePerpendicular2 * halfWidthAtSphere,
-                spherePosition * plane.distance + planePerpendicular1 * halfHeightAtSphere + planePerpendicular2 * -halfWidthAtSphere,
-                spherePosition * plane.distance + planePerpendicular1 * -halfHeightAtSphere + planePerpendicular2 * -halfWidthAtSphere,
-                spherePosition * plane.distance + planePerpendicular1 * -halfHeightAtSphere + planePerpendicular2 * halfWidthAtSphere
+                cameraPosition - plane.normal * Vector3.Distance(spherePosition, cameraPosition) + planePerpendicular1 * halfWidthAtSphere + planePerpendicular2 * halfHeightAtSphere,
+                cameraPosition - plane.normal * Vector3.Distance(spherePosition, cameraPosition) + planePerpendicular1 * halfWidthAtSphere + planePerpendicular2 * -halfHeightAtSphere,
+                cameraPosition - plane.normal * Vector3.Distance(spherePosition, cameraPosition) + planePerpendicular1 * -halfWidthAtSphere + planePerpendicular2 * -halfHeightAtSphere,
+                cameraPosition - plane.normal * Vector3.Distance(spherePosition, cameraPosition) + planePerpendicular1 * -halfWidthAtSphere + planePerpendicular2 * halfHeightAtSphere
             };
             mesh.triangles = new int[] {
                 0, 1, 3,
