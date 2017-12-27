@@ -21,6 +21,8 @@ public class MainScript : MonoBehaviour
 
     private GameObject sphereDisplay;
 
+    private GameObject[] planePerpendicularDisplay;
+
     private GameObject sphereCameraPlaneDisplay;
 
     private Math.Geometry.Frustum frustum;
@@ -33,6 +35,7 @@ public class MainScript : MonoBehaviour
     {
         // pointDisplay = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         sphereDisplay = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        planePerpendicularDisplay = new GameObject[] { GameObject.CreatePrimitive(PrimitiveType.Sphere), GameObject.CreatePrimitive(PrimitiveType.Sphere) };
         // sphereCameraPlaneDisplay = GameObject.CreatePrimitive(PrimitiveType.Plane);
         cameraPosition = Camera.main.transform.position;
 
@@ -164,7 +167,8 @@ public class MainScript : MonoBehaviour
             Vector3 cameraPosition = Camera.main.transform.position;
             // Vector3 cameraPlaneNormal = (cameraPosition - spherePosition).normalized;
             Vector3 cameraPlaneNormal = GeometryUtility.CalculateFrustumPlanes(Camera.main)[5].normal.normalized;
-            Math.Geometry.Plane plane = new Math.Geometry.Plane(cameraPlaneNormal, -Vector3.Dot(cameraPlaneNormal, spherePosition));
+            // Math.Geometry.Plane plane = new Math.Geometry.Plane(cameraPlaneNormal, -Vector3.Dot(cameraPlaneNormal, spherePosition));
+            Math.Geometry.Plane plane = new Math.Geometry.Plane(cameraPlaneNormal, -Vector3.Dot(cameraPlaneNormal, cameraPosition - cameraPlaneNormal * Vector3.Distance(spherePosition, cameraPosition)));
 
             Gizmos.color = Color.blue;
             Gizmos.DrawLine(spherePosition + plane.normal * sphereRadius, spherePosition - plane.normal * plane.PlaneEquation(spherePosition));
@@ -178,13 +182,14 @@ public class MainScript : MonoBehaviour
             // Vector3 planePerpendicular1 = new Vector3(Mathf.Sin(theta) * Mathf.Cos(phi), Mathf.Sin(theta) * Mathf.Sin(phi), Mathf.Cos(theta));
             Vector3 planePerpendicular1 = Vector3.Cross(Camera.main.transform.up.normalized, -plane.normal);
             Vector3 planePerpendicular2 = Vector3.Cross(planePerpendicular1, plane.normal);
-            float offset = Mathf.Sqrt(Mathf.Pow(sphereRadius, 2) - Mathf.Pow(plane.PlaneEquation(spherePosition), 2));
-            Gizmos.color = Color.magenta;
-            Gizmos.DrawSphere(closestPointOnPlane, 0.1f);
-            Gizmos.DrawSphere(closestPointOnPlane + planePerpendicular1 * offset, 0.1f);
-            Gizmos.DrawSphere(closestPointOnPlane + planePerpendicular2 * offset, 0.1f);
             float halfHeightAtSphere = Vector3.Distance(spherePosition, cameraPosition) * Mathf.Tan(Camera.main.fieldOfView * Mathf.Deg2Rad / 2f);
             float halfWidthAtSphere = halfHeightAtSphere * Camera.main.aspect;
+
+            float intersectionCircleRadius = Mathf.Sqrt(Mathf.Pow(sphereRadius, 2) - Mathf.Pow(plane.PlaneEquation(spherePosition), 2));
+            Gizmos.color = Color.magenta;
+            Gizmos.DrawSphere(closestPointOnPlane, 0.1f);
+            Gizmos.DrawSphere(closestPointOnPlane + planePerpendicular1 * intersectionCircleRadius, 0.1f);
+            Gizmos.DrawSphere(closestPointOnPlane + planePerpendicular2 * intersectionCircleRadius, 0.1f);
             Mesh mesh = new Mesh();
             mesh.vertices = new Vector3[] {
                 cameraPosition - plane.normal * Vector3.Distance(spherePosition, cameraPosition) + planePerpendicular1 * halfWidthAtSphere + planePerpendicular2 * halfHeightAtSphere,
@@ -202,7 +207,22 @@ public class MainScript : MonoBehaviour
             };
             Gizmos.color = new Color(1f, 1f, 1f, 0.5f);
             Gizmos.DrawMesh(mesh);
+            float size = Mathf.Max(halfWidthAtSphere, halfHeightAtSphere);
             // Gizmos.DrawCube(spherePosition, new Vector3(halfWidthAtSphere * 2f, halfHeightAtSphere * 2f, 0.1f));
+            DrawCircleGizmos(closestPointOnPlane, planePerpendicular1 * Mathf.Min(1f, size), planePerpendicular2 * Mathf.Min(1f, size));
+        }
+    }
+
+    private void DrawCircleGizmos(Vector3 center, Vector3 perpendicular1, Vector3 perpendicular2)
+    {
+        for (int i = 0; i < 60; i++)
+        {
+            float theta1 = i / 60f * Mathf.PI * 2f;
+            float theta2 = (i + 1) / 60f * Mathf.PI * 2f;
+            Vector3 from = center + perpendicular1 * Mathf.Cos(theta1) + perpendicular2 * Mathf.Sin(theta1);
+            Vector3 to = center + perpendicular1 * Mathf.Cos(theta2) + perpendicular2 * Mathf.Sin(theta2);
+            Gizmos.color = Color.white;
+            Gizmos.DrawLine(from, to);
         }
     }
 }
