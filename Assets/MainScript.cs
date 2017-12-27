@@ -31,9 +31,9 @@ public class MainScript : MonoBehaviour
 
     void Start()
     {
-        pointDisplay = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        // pointDisplay = GameObject.CreatePrimitive(PrimitiveType.Sphere);
         sphereDisplay = GameObject.CreatePrimitive(PrimitiveType.Sphere);
-        sphereCameraPlaneDisplay = GameObject.CreatePrimitive(PrimitiveType.Plane);
+        // sphereCameraPlaneDisplay = GameObject.CreatePrimitive(PrimitiveType.Plane);
         cameraPosition = Camera.main.transform.position;
 
         //Plane[] planes = GeometryUtility.CalculateFrustumPlanes(Camera.main);
@@ -65,22 +65,22 @@ public class MainScript : MonoBehaviour
 
     void Update()
     {
-        {
-            pointDisplay.transform.position = pointPosition;
-            pointDisplay.transform.localScale = 0.1f * Vector3.one;
-            Vector3? intersection = Math.Geometry.Intersections.Intersects(frustum, pointPosition);
-            if (intersection.HasValue)
-            {
-                pointDisplay.GetComponent<Renderer>().material = insideMaterial;
-            }
-            else
-            {
-                pointDisplay.GetComponent<Renderer>().material = outsideMaterial;
-            }
-        }
+        //{
+        //    pointDisplay.transform.position = pointPosition;
+        //    pointDisplay.transform.localScale = 0.1f * Vector3.one;
+        //    Vector3? intersection = Math.Geometry.Intersections.Intersects(frustum, pointPosition);
+        //    if (intersection.HasValue)
+        //    {
+        //        pointDisplay.GetComponent<Renderer>().material = insideMaterial;
+        //    }
+        //    else
+        //    {
+        //        pointDisplay.GetComponent<Renderer>().material = outsideMaterial;
+        //    }
+        //}
 
-        sphereCameraPlaneDisplay.transform.position = spherePosition;
-        sphereCameraPlaneDisplay.transform.rotation = Quaternion.FromToRotation(Vector3.up, cameraPosition - spherePosition);
+        //sphereCameraPlaneDisplay.transform.position = spherePosition;
+        //sphereCameraPlaneDisplay.transform.rotation = Quaternion.FromToRotation(Vector3.up, cameraPosition - spherePosition);
 
         {
             sphereDisplay.transform.position = spherePosition;
@@ -121,6 +121,13 @@ public class MainScript : MonoBehaviour
 
     void OnDrawGizmos()
     {
+        if (sphereDisplay)
+        {
+            sphereDisplay.transform.position = spherePosition;
+            sphereDisplay.transform.localScale = 2f * sphereRadius * Vector3.one;
+            sphereDisplay.GetComponent<Renderer>().material = insideMaterial;
+        }
+
         //Math.Geometry.Intersections.FrustumSphereIntersection?[] intersections = Math.Geometry.Intersections.Intersects(frustum, new Math.Geometry.Sphere(spherePosition, sphereRadius));
         //foreach (Math.Geometry.Intersections.FrustumSphereIntersection intersection in intersections.Where((intersection) => intersection.HasValue).Select((intersection) => intersection.Value))
         //{
@@ -154,6 +161,7 @@ public class MainScript : MonoBehaviour
         //}
 
         {
+            Vector3 cameraPosition = Camera.main.transform.position;
             Vector3 cameraPlaneNormal = (cameraPosition - spherePosition).normalized;
             Math.Geometry.Plane plane = new Math.Geometry.Plane(cameraPlaneNormal, -Vector3.Dot(cameraPlaneNormal, spherePosition));
 
@@ -164,14 +172,36 @@ public class MainScript : MonoBehaviour
             Vector3 closestPointOnPlane = spherePosition - plane.PlaneEquation(spherePosition) * plane.normal;
             // Vector3 perpendicularPlaneNormal = new Vector3(1f, 1f, -(plane.normal.x + plane.normal.y) / plane.normal.z).normalized;
             float theta = Mathf.Acos(plane.normal.z) + Mathf.PI / 2f;
-            float phi = Mathf.Atan(plane.normal.y / plane.normal.x);
-            Vector3 planePerpendicular1 = new Vector3(Mathf.Sin(theta) * Mathf.Cos(phi), Mathf.Sin(theta) * Mathf.Sin(phi), Mathf.Cos(theta));
+            float phi = Mathf.Atan2(plane.normal.y, plane.normal.x);
+            // Debug.Log(theta + " " + phi);
+            // Vector3 planePerpendicular1 = new Vector3(Mathf.Sin(theta) * Mathf.Cos(phi), Mathf.Sin(theta) * Mathf.Sin(phi), Mathf.Cos(theta));
+            Vector3 planePerpendicular1 = Camera.main.transform.up.normalized;
             Vector3 planePerpendicular2 = Vector3.Cross(planePerpendicular1, plane.normal);
             float offset = Mathf.Sqrt(Mathf.Pow(sphereRadius, 2) - Mathf.Pow(plane.PlaneEquation(spherePosition), 2));
             Gizmos.color = Color.magenta;
             Gizmos.DrawSphere(closestPointOnPlane, 0.1f);
             Gizmos.DrawSphere(closestPointOnPlane + planePerpendicular1 * offset, 0.1f);
             Gizmos.DrawSphere(closestPointOnPlane + planePerpendicular2 * offset, 0.1f);
+            float halfHeightAtSphere = Vector3.Distance(spherePosition, cameraPosition) * Mathf.Tan(Camera.main.fieldOfView * Mathf.Deg2Rad / 2f);
+            float halfWidthAtSphere = halfHeightAtSphere * Camera.main.aspect;
+            Mesh mesh = new Mesh();
+            mesh.vertices = new Vector3[] {
+                spherePosition * plane.distance + planePerpendicular1 * halfHeightAtSphere + planePerpendicular2 * halfWidthAtSphere,
+                spherePosition * plane.distance + planePerpendicular1 * halfHeightAtSphere + planePerpendicular2 * -halfWidthAtSphere,
+                spherePosition * plane.distance + planePerpendicular1 * -halfHeightAtSphere + planePerpendicular2 * -halfWidthAtSphere,
+                spherePosition * plane.distance + planePerpendicular1 * -halfHeightAtSphere + planePerpendicular2 * halfWidthAtSphere
+            };
+            mesh.triangles = new int[] {
+                0, 1, 3,
+                1, 2, 3
+            };
+            mesh.normals = new Vector3[]
+            {
+                plane.normal, plane.normal, plane.normal, plane.normal
+            };
+            Gizmos.color = new Color(1f, 1f, 1f, 0.5f);
+            Gizmos.DrawMesh(mesh);
+            // Gizmos.DrawCube(spherePosition, new Vector3(halfWidthAtSphere * 2f, halfHeightAtSphere * 2f, 0.1f));
         }
     }
 }
