@@ -5,7 +5,7 @@ namespace Math.Geometry
 {
     public static class SphereEqualAreaSmallDiameter
     {
-        private static float AreaOfIdealRegion(int dim, int n, float minColatitude, float maxColatitude)
+        private static float AreaOfIdealRegion(int dim, int n, float minColatitude = 0f, float maxColatitude = Mathf.PI)
         {
             return AreaOfCollar(dim, minColatitude, maxColatitude) / n;
         }
